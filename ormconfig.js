@@ -4,7 +4,7 @@ module.exports = [{
     "port": 3306,
     "username": "work",
     "password": "qwerty12345",
-    "database": "proj",
+    "database": "analitic",
     "autoSchemaSync": true,
     "entities": [`./src/**/*.entity.ts`],
     "migrations": [
