@@ -2,11 +2,15 @@ import { Injectable } from '@nestjs/common';
 import * as mongo from 'mongodb';
 import { InjectDb } from 'nest-mongodb';
 
+import { DBWorker } from './db.worker';
+import { UploadResponce } from './models/uploadResponse';
+
 @Injectable()
 export class AnaliticService {
     private readonly collection: mongo.Collection;
     constructor(
         @InjectDb() private readonly db: mongo.Db,
+        private dbworker: DBWorker,
     ) {
         this.collection = this.db.collection('test');
     }
@@ -16,14 +20,12 @@ export class AnaliticService {
         return ans;
     }
 
-    async AddToTable(tablename: string, data): Promise<any> {
-        let rawArr = data.split('\r\n');
-        let headersTab = rawArr.shift();
-        let gotArr;
-        for (let str = 0; str < rawArr.length; str++) {
-            rawArr[str] = rawArr[str].split(';')
-
-        }
-        return rawArr;
+    async AddToTable(tablename: string, data): Promise<UploadResponce> {
+            const parsingData = await this.dbworker.parseCSV(data);
+            if (parsingData.data) {
+                await this.db.collection(tablename).insertMany(parsingData.data);
+                return {text: 'Succes'};
+            }
+            return { text: parsingData.message};
     }
 }

@@ -3,6 +3,7 @@ import { MongoModule } from 'nest-mongodb';
 
 import { AnaliticController } from './analitic.controller';
 import { AnaliticService } from './analitic.service';
+import { DBWorker } from './db.worker';
 
 @Module({
     controllers: [
@@ -10,6 +11,7 @@ import { AnaliticService } from './analitic.service';
     ],
     providers: [
         AnaliticService,
+        DBWorker,
     ],
     exports: [
     ],
