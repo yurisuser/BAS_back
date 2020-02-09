@@ -14,8 +14,24 @@ export class AnaliticController {
         return this.srv.getAll();
     }
 
+    @Get('/collections/names')
+    public async getCollections() {
+        return await this.srv.getCollectionsNames();
+    }
+
+    @Get('/collections/info')
+    public async getCollectionsInfo() {
+        return await this.srv.getCollectionsInfo();
+    }
+
     @Post()
-    public async addToTable(@Body() body: any): Promise<UploadResponce> {
+    public async addToCollection(@Body() body: any): Promise<UploadResponce> {
         return await this.srv.AddToTable(body.tableName, body.file);
+    }
+
+    @Post('collections/create')
+    public async createCollection(@Body() body: {name: string}) {
+        await this.srv.CreateCollection(body.name);
+        return {text: 'ok'};
     }
 }

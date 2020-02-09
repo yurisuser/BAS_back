@@ -4,6 +4,8 @@ import { InjectDb } from 'nest-mongodb';
 
 import { DBWorker } from './db.worker';
 import { UploadResponce } from './models/uploadResponse';
+import { async } from 'rxjs/internal/scheduler/async';
+import { ICollectionsInfo } from './models/collections.info';
 
 @Injectable()
 export class AnaliticService {
@@ -27,5 +29,28 @@ export class AnaliticService {
                 return {text: 'Succes'};
             }
             return { text: parsingData.message};
+    }
+
+    async CreateCollection(name: string): Promise<any> {
+        return await this.db.createCollection(name);
+    }
+
+    async getCollectionsNames(): Promise<string[]> {
+        const ans = [];
+        const data = await this.db.listCollections().toArray();
+        data.forEach(x => ans.push(x.name));
+        return ans;
+    }
+
+    async getCollectionsInfo(): Promise<ICollectionsInfo[]> {
+        const result = [];
+        const names = await this.getCollectionsNames();
+        const promises = names.map(async x => {
+            const info = await this.db.collection(x).stats();
+            const {wiredTiger, indexDetails, totalIndexSize, indexSizes, ...data} = info;
+            result.push(data);
+        });
+        await Promise.all(promises);
+        return result;
     }
 }
