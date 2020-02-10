@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
 
 import { AnaliticService } from './analitic.service';
 import { UploadResponce } from './models/uploadResponse';
@@ -14,14 +14,24 @@ export class AnaliticController {
         return this.srv.getAll();
     }
 
-    @Get('/collections/names')
+    @Get('names')
     public async getCollections() {
         return await this.srv.getCollectionsNames();
     }
 
-    @Get('/collections/info')
+    @Get('info')
     public async getCollectionsInfo() {
         return await this.srv.getCollectionsInfo();
+    }
+
+    @Get('distinct')
+    public async distinct(@Query() q) {
+        return await this.srv.distinct(q.collection, q.field);
+    }
+
+    @Get('fields')
+    public async getFields(@Query() q) {
+        return await this.srv.getFields(q.collection);
     }
 
     @Post()
@@ -29,9 +39,16 @@ export class AnaliticController {
         return await this.srv.AddToTable(body.tableName, body.file);
     }
 
-    @Post('collections/create')
+    @Post('create')
     public async createCollection(@Body() body: {name: string}) {
+        const existCollections = await this.srv.getCollectionsNames();
+        if (!body.name) {
+            throw new HttpException('Empty collection name', HttpStatus.BAD_REQUEST);
+        }
+        if (existCollections.includes(body.name)) {
+            throw new HttpException('Collection is exist', HttpStatus.BAD_REQUEST);
+        }
         await this.srv.CreateCollection(body.name);
-        return {text: 'ok'};
+        return await this.srv.getCollectionsInfo();
     }
 }
