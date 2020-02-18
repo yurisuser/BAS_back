@@ -26,7 +26,11 @@ export class AnaliticController {
 
     @Get('distinct')
     public async distinct(@Query() q) {
-        return await this.srv.distinct(q.collection, q.field);
+        console.log(q);
+
+        const a = await this.srv.distinct(q.collection, q.field);
+        console.log(a);
+        return a;
     }
 
     @Get('fields')
@@ -50,5 +54,10 @@ export class AnaliticController {
         }
         await this.srv.CreateCollection(body.name);
         return await this.srv.getCollectionsInfo();
+    }
+
+    @Post('userrequest')
+    public async userRequest(@Body() body: any) {
+        return await this.srv.searchByParam(body.table, body.data);
     }
 }

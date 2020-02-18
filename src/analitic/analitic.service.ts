@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus, Options } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import * as mongo from 'mongodb';
 import { InjectDb } from 'nest-mongodb';
 
@@ -21,7 +21,9 @@ export class AnaliticService {
     }
 
     async distinct(collectionName: string, field: string) {
-        return await this.db.collection(collectionName).distinct(field);
+        const a = await this.db.collection(collectionName).distinct(field);
+        return a;
+
     }
 
     async getFields(collection): Promise<string[]> {
@@ -31,11 +33,14 @@ export class AnaliticService {
 
     async AddToTable(collectionName: string, data): Promise<UploadResponce> {
             const parsingData = await this.parseCSV(data);
-            const {_id, ...exmpl} = await this.db.collection(collectionName).findOne({});
-            if (exmpl) {
-                const isEq = this.isEqualsJSON(exmpl, parsingData.data[0]);
-                if (!isEq) {
-                    throw new HttpException('Wrong type data', HttpStatus.BAD_REQUEST);
+            const probe = await this.db.collection(collectionName).findOne({});
+            if (probe) {
+                const {_id, ...exmpl} = probe;
+                if (exmpl) {
+                    const isEq = this.isEqualsJSON(exmpl, parsingData.data[0]);
+                    if (!isEq) {
+                        throw new HttpException('Wrong type data', HttpStatus.BAD_REQUEST);
+                    }
                 }
             }
             if (!parsingData.err) {
@@ -106,5 +111,11 @@ export class AnaliticService {
             }
         });
         return true;
+    }
+
+    public async searchByParam(table, param) {
+        const q = {};
+        param.map( x => q[`${x.field}`] = {$in: x.values} );
+        return await this.db.collection(table).find(q).toArray();
     }
 }
