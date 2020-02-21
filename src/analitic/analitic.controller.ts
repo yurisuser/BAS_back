@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpException, HttpStatus, Query } from '@nestjs/common';
 
 import { AnaliticService } from './analitic.service';
 import { UploadResponce } from './models/uploadResponse';
+import { AnaliticDataDto } from './dto/analitic.data.dto';
+import { AnaliticDataResponce } from './models/analitic.data.responce';
 
 @Controller('analitic')
 export class AnaliticController {
@@ -26,11 +28,7 @@ export class AnaliticController {
 
     @Get('distinct')
     public async distinct(@Query() q) {
-        console.log(q);
-
-        const a = await this.srv.distinct(q.collection, q.field);
-        console.log(a);
-        return a;
+        return await this.srv.distinct(q.collection, q.field);
     }
 
     @Get('fields')
@@ -57,7 +55,12 @@ export class AnaliticController {
     }
 
     @Post('userrequest')
-    public async userRequest(@Body() body: any) {
-        return await this.srv.searchByParam(body.table, body.data);
+    public async userRequest(@Body() body: AnaliticDataDto): Promise<AnaliticDataResponce> {
+        const size = body.size || null;
+        const page = body.page || null;
+        const id = body.id || null;
+        console.log(body);
+
+        return await this.srv.searchByParam(body.table, body.data, size, page, id);
     }
 }

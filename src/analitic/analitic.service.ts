@@ -5,6 +5,7 @@ import { InjectDb } from 'nest-mongodb';
 import { UploadResponce } from './models/uploadResponse';
 import { ICollectionsInfo } from './models/collections.info';
 import { ParsingCSV } from './models/parsingCSV';
+import { AnaliticDataResponce } from './models/analitic.data.responce';
 
 @Injectable()
 export class AnaliticService {
@@ -113,9 +114,24 @@ export class AnaliticService {
         return true;
     }
 
-    public async searchByParam(table, param) {
-        const q = {};
-        param.map( x => q[`${x.field}`] = {$in: x.values} );
-        return await this.db.collection(table).find(q).toArray();
+    public async searchByParam(table, param, size, page, id): Promise<AnaliticDataResponce> {
+        const query = {};
+        let cursor: mongo.Cursor;
+        let length: number;
+        param.map( x => query[`${x.field}`] = {$in: x.values} );
+        if (size && id) {
+            cursor = this.db.collection(table).find({ _id: { $gt: id }, q: query });
+            return {
+                length: await cursor.count(),
+                data: await cursor.limit(page).toArray(),
+            };
+        }
+        cursor = this.db.collection(table).find(query);
+        length = await cursor.count();
+        if (size && page) {
+            const data = await cursor.skip( page > 0 ? ((page - 1) * size) : 0 ).limit(size).toArray();
+            return { length, data };
+        }
+        return { length, data: await cursor.toArray() };
     }
 }
