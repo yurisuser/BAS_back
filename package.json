@@ -30,7 +30,7 @@
         "@nestjs/passport": "^6.1.1",
         "@nestjs/platform-express": "^6.11.5",
         "@nestjs/typeorm": "^6.2.0",
-        "bcrypt": "^3.0.7",
+        "bcrypt": "^5.0.0",
         "class-transformer": "^0.2.3",
         "class-validator": "^0.10.2",
         "dotenv": "^8.2.0",
